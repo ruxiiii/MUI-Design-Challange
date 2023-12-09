@@ -6,7 +6,6 @@ import React, { useEffect } from "react";
 //type TransitionProps = Omit<SlideProps, "direction">;
 
 //const [hoveredBox, setHoveredBox] = React.useState<number | null>(null);
-const [boxNumber, setBoxNumber] = React.useState<number | null>(null);
 
 interface AppProps {
   dayVar: string;
@@ -55,25 +54,30 @@ const typographyStyle = {
 };
 
 const AlertContent: React.FC<{
-  hoveredBox?: number;
+  propHoveredBox?: number;
   hoverTransition?: string;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
-}> = ({ hoverTransition, onMouseEnter, onMouseLeave, hoveredBox }) => {
+  boxNumber: number | null;
+}> = ({
+  hoverTransition,
+  onMouseEnter,
+  onMouseLeave,
+  propHoveredBox,
+  boxNumber,
+}) => {
   let dynamicMarginTop = "";
   let dynamicMarginBottom = "";
 
-  const [boxNumber, setBoxNumber] = React.useState<number | null>(null);
-
   useEffect(() => {
-    if (hoveredBox === 0) {
-      setBoxNumber(2);
+    if (propHoveredBox === 0 && onMouseEnter) {
+      onMouseEnter();
     }
 
-    if (hoveredBox === 1) {
-      setBoxNumber(3);
+    if (propHoveredBox === 1 && onMouseEnter) {
+      onMouseEnter();
     }
-  }, [hoveredBox]);
+  }, [propHoveredBox, onMouseEnter, onMouseLeave]);
 
   if (boxNumber === 2) {
     dynamicMarginTop = "57px";
@@ -105,10 +109,10 @@ const AlertContent: React.FC<{
             // marginBottom: 0,
             marginTop: dynamicMarginTop,
             marginBottom: dynamicMarginBottom,
+            marginLeft: 0,
           },
           // marginBottom: 2,
-          marginBottom:
-            dynamicMarginBottom !== undefined ? -dynamicMarginBottom : 2,
+          marginBottom: 2,
           marginLeft: 2,
           zIndex: 0 ? 1 : 0,
         }}
@@ -138,6 +142,7 @@ function App({
   timeVar,
   hoverTransition,
 }: AppProps): JSX.Element {
+  const [boxNumber, setBoxNumber] = React.useState<number | null>(null);
   const [hoveredBox, setHoveredBox] = React.useState<number | null>(null);
   const [open, setOpen] = React.useState(false);
 
@@ -146,10 +151,15 @@ function App({
     setOpen(true);
   };
 
-  const getDynamicMargin = (boxNumber: number): number => {
-    if (hoveredBox === boxNumber) {
-      return boxNumber === 0 ? 0 : 27 * (boxNumber - 1);
+  const getDynamicMargin = (boxNumber: number | null): number => {
+    if (boxNumber === null) {
+      return 0;
     }
+
+    if (hoveredBox === boxNumber) {
+      return boxNumber === 1 ? 0 : 27 * (boxNumber - 1);
+    }
+
     return 0;
   };
   // boxnumber 1,2,3 if hoveredbox = boxnumber
@@ -188,23 +198,40 @@ function App({
                 marginBottom: 2,
                 boxShadow: " 0 2px 10px rgba(0, 0.3, 0, 0.3)",
                 alignItems: "center",
-                height: "56px",
+                height: "57px",
                 transition: "transform 0.5s ease-in-out",
                 "&:hover": {
                   transform: "scale(1.05)",
-                  marginBottom: getDynamicMargin(1),
+                  marginBottom: getDynamicMargin(boxNumber),
                 },
                 zIndex: boxNumber === 1 ? 1 : 0,
               }}
-              onMouseEnter={() => setBoxNumber(1)}
-              onMouseLeave={() => setHoveredBox(null)}
+              onMouseEnter={() => {
+                setBoxNumber(1);
+                setHoveredBox(1);
+              }}
+              onMouseLeave={() => {
+                setBoxNumber(null);
+                setHoveredBox(null);
+              }}
             >
               Event has been created!
             </Alert>
 
-            <AlertContent hoverTransition="0.5s ease-in-out" hoveredBox={0} />
+            <AlertContent
+              hoverTransition="0.5s ease-in-out"
+              onMouseEnter={() => setBoxNumber(2)}
+              onMouseLeave={() => setBoxNumber(null)}
+              boxNumber={boxNumber}
+            />
 
-            <AlertContent hoverTransition="0.8s ease-in-out" hoveredBox={1} />
+            <AlertContent
+              hoverTransition="0.8s ease-in-out"
+              // propHoveredBox={1}
+              onMouseEnter={() => setBoxNumber(3)}
+              onMouseLeave={() => setBoxNumber(null)}
+              boxNumber={boxNumber}
+            />
           </Box>
         </Snackbar>
       </Box>
